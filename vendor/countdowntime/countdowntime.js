@@ -6,50 +6,38 @@
       countdown100: function(options) {
         var defaults = {
           timeZone: "",
-          endtimeYear: 0,
-          endtimeMonth: 0,
-          endtimeDate: 0,
-          endtimeHours: 0,
-          endtimeMinutes: 0,
-          endtimeSeconds: 0,
+          eventTime: "2020-12-1 00:00"
         }
 
         var options =  $.extend(defaults, options);
 
         return this.each(function() {
           var obj = $(this);
-          var timeNow = new Date();
+		  //var moment=require("moment-timezone");
+		  
+          var timeNow = moment.tz();
 
-          var tZ = options.timeZone; console.log(tZ);
-          var endYear = options.endtimeYear;
-          var endMonth = options.endtimeMonth;
-          var endDate = options.endtimeDate;
-          var endHours = options.endtimeHours;
-          var endMinutes = options.endtimeMinutes;
-          var endSeconds = options.endtimeSeconds;
-
+          var tZ = options.timeZone; 
+		  //console.log(tZ);
+          var eventTime = options.eventTime;
+          
           if(tZ == "") {
-            var deadline = new Date(endYear, endMonth - 1, endDate, endHours, endMinutes, endSeconds);
+            var deadline = moment.tz(eventTime,"YYYY-MM-DD HH:mm","Asia/Kolkata");
           } 
           else {
-            var deadline = moment.tz([endYear, endMonth - 1, endDate, endHours, endMinutes, endSeconds], tZ).format();
+            var deadline = moment.tz(eventTime,"YYYY-MM-DD HH:mm",tZ);
           }
-
-          if(Date.parse(deadline) < Date.parse(timeNow)) {
-            var deadline = new Date(Date.parse(new Date()) + endDate * 24 * 60 * 60 * 1000 + endHours * 60 * 60 * 1000); 
-          }
-          
-          
+      
           initializeClock(deadline);
 
           function getTimeRemaining(endtime) { 
-            var t = Date.parse(endtime) - Date.parse(new Date());
-            var seconds = Math.floor((t / 1000) % 60);
-            var minutes = Math.floor((t / 1000 / 60) % 60);
-            var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
-            var days = Math.floor(t / (1000 * 60 * 60 * 24));
+            var duration = moment.duration(endtime.diff(moment.tz()));
+            var seconds = duration.seconds();
+            var minutes = duration.minutes();
+            var hours = duration.hours();
+            var days = duration.days();
             return {
-              'total': t,
+              'total': duration.asSeconds(),
               'days': days,
               'hours': hours,
               'minutes': minutes,
@@ -57,7 +45,8 @@
             };
           }
 
-          function initializeClock(endtime) { 
+          function initializeClock(endtime) {
+			//console.log(endtime);
             var daysSpan = $(obj).find('.days');
             var hoursSpan = $(obj).find('.hours');
             var minutesSpan = $(obj).find('.minutes');
